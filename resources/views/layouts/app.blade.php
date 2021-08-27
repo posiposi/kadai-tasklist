@@ -20,6 +20,16 @@
                 <div class="collapse navbar-collapse" id="nav-bar">
                     <ul class="navbar-nav mr-auto"></ul>
                     <ul class="navbar-nav">
+                        @if (Auth::check()) {{-- ログイン有無の確認 --}}
+                            {{-- ログアウトへのリンク --}} 
+                            {!! link_to_route('logout.get', 'ログアウト', [], ['class' => 'nav-link']) !!}
+                        @else
+                            {{-- ユーザ登録ページへのリンク --}}
+                            {!! link_to_route('signup.get', 'ユーザ登録', [], ['class' => 'nav-link']) !!}
+                            {{-- ログインページへのリンク --}}
+                            {!! link_to_route('login', 'ログイン', [], ['class' => 'nav-link']) !!} 
+                        @endif
+                    
                     </ul>
                 </div>
             </nav>
