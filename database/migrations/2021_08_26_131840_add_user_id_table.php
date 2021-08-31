@@ -15,7 +15,7 @@ class AddUserIdTable extends Migration
     {
         Schema::table('tasks', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id'); //テーブルに'user_id'を追加
-            $table->foreign('user_id')->references('id')->on('tasks'); //'user_id'にキー制約('tasks'テーブルの'id'を参照)
+            $table->foreign('user_id')->references('id')->on('users'); //'user_id'にキー制約('users'テーブルの'id'を参照)
         });
     }
 

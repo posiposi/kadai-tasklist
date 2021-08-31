@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Task; //モデル使用のため追加
+use App\User; //必要？
 
 class TasksController extends Controller
 {
@@ -13,13 +14,26 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    
+    
     public function index()
     {
-        $tasks = Task::all();
+        //$data = []; //追加
+        if(\Auth::check()){
+            $user = \Auth::user(); //ユーザ情報取得　追加
+            //$tasks = Task::all();
+            
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10); //追加
+            
+            return view('tasks.index', [
+                'tasks' => $tasks,
+            ]);
+        } 
         
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+        else {
+            return view('welcome');
+        }
+
     }
 
     /**
@@ -30,7 +44,7 @@ class TasksController extends Controller
     public function create()
     {
         $task = new Task;
-
+        
         return view('tasks.create', [
             'task' => $task,
         ]);
@@ -46,12 +60,13 @@ class TasksController extends Controller
     {
         $request->validate([
             'content' => 'required',
-            'status' => 'required|max:10'
+            'status' => 'required|max:10',
         ]);
         
         $task = new Task;
         $task->status = $request->status;
         $task->content = $request->content;
+        $task->user_id = \Auth::user()->id;
         $task->save();
 
         return redirect('/');
@@ -66,10 +81,13 @@ class TasksController extends Controller
     public function show($id)
     {
         $task = Task::findOrFail($id);
-
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        if(\Auth::id() === $task->user_id) {
+            return view('tasks.show', [
+                'task' => $task,
+            ]);
+        }
+        
+        else return redirect('/');
     }
 
     /**
@@ -82,9 +100,15 @@ class TasksController extends Controller
     {
         $task = Task::findOrFail($id);
 
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        if(\Auth::id() === $task->user_id) {
+            return view('tasks.edit', [
+                'task' => $task,
+            ]);
+        }
+        
+        else {
+            return redirect('/');
+        }
     }
 
     /**
@@ -98,12 +122,13 @@ class TasksController extends Controller
     {
         $request->validate([
             'content' => 'required',
-            'status' => 'required|max:10',
+            'status' => 'required|max:10', 
         ]);
         
         $task = Task::findOrFail($id);
         $task->status = $request->status;
         $task->content = $request->content;
+        $task->user_id = \Auth::user()->id;
         $task->save();
         
         return redirect('/');
@@ -116,10 +141,16 @@ class TasksController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {
-        $task = Task::findOrFail($id);
-        $task->delete();
+    {   
+        $task = \App\Task::findOrFail($id);
         
-        return redirect('/');
+        if(\Auth::id() === $task->user_id) {
+            $task->delete();
+            return redirect('/');
+        }
+        
+        else {
+            return view('/');
+        }
     }
 }
